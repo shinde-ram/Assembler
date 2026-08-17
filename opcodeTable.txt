@@ -1,0 +1,95 @@
+
+--> Instruction Encoding Table
+
+| Instruction  | Opcode  | Operand Count | Operand 1 | Operand 2 | ModR/M | SIB      | Displacement | Immediate | Special            |
+| ------------ | ------- | ------------: | --------- | --------- | ------ | -------- | ------------ | --------- | ------------------ |
+| MOV          | `8B`    |             2 | REG32     | RM32      | Yes    | Optional | Optional     | No        | `/r`               |
+| MOV          | `89`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| MOV          | `B8+rd` |             2 | REG32     | IMM32     | No     | No       | No           | 32-bit    | `+rd`              |
+| MOV          | `C7`    |             2 | RM32      | IMM32     | Yes    | Optional | Optional     | 32-bit    | `/0`               |
+| ADD          | `01`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| ADD          | `03`    |             2 | REG32     | RM32      | Yes    | Optional | Optional     | No        | `/r`               |
+| ADD          | `05`    |             2 | EAX       | IMM32     | No     | No       | No           | 32-bit    | —                  |
+| SUB          | `29`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| SUB          | `2B`    |             2 | REG32     | RM32      | Yes    | Optional | Optional     | No        | `/r`               |
+| CMP          | `39`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| CMP          | `3B`    |             2 | REG32     | RM32      | Yes    | Optional | Optional     | No        | `/r`               |
+| JMP          | `E9`    |             1 | REL32     | —         | No     | No       | No           | REL32     | Relative           |
+| JNE          | `75`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| CALL         | `E8`    |             1 | REL32     | —         | No     | No       | No           | REL32     | Relative           |
+| INC          | `FF`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/0`               |
+| DEC          | `FF`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/1`               |
+| MUL          | `F7`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/4`               |
+| DIV          | `F7`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/6`               |
+| AND          | `21`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| OR           | `09`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| XOR          | `31`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| **NOP**      | `90`    |             0 | —         | —         | No     | No       | No           | No        | —                  |
+| **PUSH**     | `50+rd` |             1 | REG32     | —         | No     | No       | No           | No        | `+rd`              |
+| **PUSH**     | `68`    |             1 | IMM32     | —         | No     | No       | No           | 32-bit    | —                  |
+| **PUSH**     | `FF`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/6`               |
+| **POP**      | `58+rd` |             1 | REG32     | —         | No     | No       | No           | No        | `+rd`              |
+| **POP**      | `8F`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/0`               |
+| **RET**      | `C3`    |             0 | —         | —         | No     | No       | No           | No        | Near return        |
+| **RET**      | `C2`    |             1 | IMM16     | —         | No     | No       | No           | 16-bit    | Near return        |
+| **LEA**      | `8D`    |             2 | REG32     | RM32      | Yes    | Optional | Optional     | No        | `/r`               |
+| **TEST**     | `85`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| **TEST**     | `A9`    |             2 | EAX       | IMM32     | No     | No       | No           | 32-bit    | —                  |
+| **NEG**      | `F7`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/3`               |
+| **NOT**      | `F7`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/2`               |
+| **IMUL**     | `F7`    |             1 | RM32      | —         | Yes    | Optional | Optional     | No        | `/5`               |
+| **IMUL**     | `0F AF` |             2 | REG32     | RM32      | Yes    | Optional | Optional     | No        | `/r`               |
+| **ADC**      | `11`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| **SBB**      | `19`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
+| **SHL**      | `D3`    |             2 | RM32      | CL        | Yes    | Optional | Optional     | No        | `/4`               |
+| **SHR**      | `D3`    |             2 | RM32      | CL        | Yes    | Optional | Optional     | No        | `/5`               |
+| **SAR**      | `D3`    |             2 | RM32      | CL        | Yes    | Optional | Optional     | No        | `/7`               |
+| **ROL**      | `D3`    |             2 | RM32      | CL        | Yes    | Optional | Optional     | No        | `/0`               |
+| **ROR**      | `D3`    |             2 | RM32      | CL        | Yes    | Optional | Optional     | No        | `/1`               |
+| **JE/JZ**    | `74`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JNE/JNZ**  | `75`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JG/JNLE**  | `7F`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JL/JNGE**  | `7C`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JGE/JNL**  | `7D`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JLE/JNG**  | `7E`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JA/JNBE**  | `77`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JB/JNAE**  | `72`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JAE/JNB**  | `73`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **JALE/JBE** | `76`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Relative           |
+| **LOOP**     | `E2`    |             1 | REL8      | —         | No     | No       | No           | REL8      | Uses ECX           |
+| **INT**      | `CD`    |             1 | IMM8      | —         | No     | No       | No           | 8-bit     | Software interrupt |
+| **SYSCALL**  | `0F 05` |             0 | —         | —         | No     | No       | No           | No        | System call        |
+| **CLC**      | `F8`    |             0 | —         | —         | No     | No       | No           | No        | Clear Carry        |
+| **STC**      | `F9`    |             0 | —         | —         | No     | No       | No           | No        | Set Carry          |
+| **CLD**      | `FC`    |             0 | —         | —         | No     | No       | No           | No        | Clear Direction    |
+| **STD**      | `FD`    |             0 | —         | —         | No     | No       | No           | No        | Set Direction      |
+
+
+--> Operand Type Legend
+
+Symbol	Meaning
+------  --------
+REG32	32-bit register
+RM32	32-bit register or memory operand
+MEM32	32-bit memory operand
+IMM8	8-bit immediate
+IMM16	16-bit immediate
+IMM32	32-bit immediate
+REL8	8-bit relative offset
+REL32	32-bit relative offset
+
+
+--> Encoding-Requirement Legend
+
+Field	            Meaning
+------              --------
+ModR/M = Yes	    ModR/M byte is required
+SIB = Optional	    SIB may be required depending on memory addressing
+Disp = Optional	    Displacement depends on addressing mode
+Imm = 8/16/32	    Immediate of specified size
+/r	                ModR/M REG field encodes a register operand
+/0–/7	            ModR/M REG field contains opcode extension
++rd	                Register number is encoded into opcode
+REL8/REL32	        Relative offset used by control-flow instruction
+
+
