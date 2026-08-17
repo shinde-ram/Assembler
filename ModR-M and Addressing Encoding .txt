@@ -1,0 +1,114 @@
+
+
+
+------------------- ModR/M and Addressing Encoding -----------------------
+
+-->32-bit Register Encoding Table
+
+Register	3-bit Code
+--------    --------
+EAX	        000
+ECX	        001
+EDX	        010
+EBX	        011
+ESP	        100
+EBP	        101
+ESI	        110
+EDI	        111
+
+
+--> ModR/M Byte Format
+┌──────┬─────────┬─────────┐
+│ MOD  │   REG   │   R/M   │
+│ 2bit │  3 bits │  3 bits │
+└──────┴─────────┴─────────┘
+
+Field	Bits	Purpose
+-----   -----   -------
+MOD	    2	    Selects  register/memory addressing mode
+REG	    3       Register operand or opcode extension
+R/M	    3	    Register or memory addressing selection
+
+--> MOD Field
+MOD	    Meaning
+---     ---------
+00	    Memory, normally no displacement
+01	    Memory + 8-bit displacement
+10	    Memory + 32-bit displacement
+11	    Register-to-register
+
+
+* Example 1
+    MOV EAX, EBX
+    MOD = 11
+    REG = EAX = 000
+    R/M = EBX = 011
+
+    ModR/M:
+    11 000 011
+    = 11000011
+    = C3
+ModR/M = C3
+
+* Example 2
+    MOV EAX, [EBX]
+    MOD = 00
+    REG = EAX = 000
+    R/M = EBX = 011
+
+    00 000 011
+    = 00000011
+    = 03
+ModR/M = 03
+
+
+* Example 3
+    MOV EAX, [EBX + 10H]
+    MOD = 01
+    REG = EAX = 000
+    R/M = EBX = 011
+
+    01 000 011
+    = 01000011
+    = 43
+ModR/M = 43
+
+Displacement = 10H
+ModR/M + Displacement = 43 10
+
+* Example 4
+    MOV EAX, [EBX + 12345678H]
+    MOD = 10
+    REG = EAX = 000
+    R/M = EBX = 011
+
+    10 000 011
+    = 10000011
+    = 83
+ModR/M = 83
+
+Displacement = 12345678H
+Little Endian = 78 56 34 12
+
+ModR/M + Displacement = 83 78 56 34 12
+
+* Special Case
+    MOV EAX, [12345678H]
+    MOD = 00
+    REG = EAX = 000
+    R/M = 101
+
+    00 000 101
+    = 00000101
+      = 05
+ModR/M = 05
+
+Displacement = 12345678H
+Little Endian = 78 56 34 12
+
+ModR/M + Displacement = 05 78 56 34 12
+
+Note:
+When MOD = 00 and R/M = 101,
+it represents a 32-bit displacement/address
+instead of [EBP].
