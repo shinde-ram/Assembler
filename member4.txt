@@ -1,0 +1,88 @@
+Immidiate, Displacement,relative addressing & Little endian encoding
+
+
+1. Immidiate values-
+
+	Immidiate value means a constant value given directly in an instruction.
+
+Immidiate || Size
+
+Imm8 -->1 byte
+Imm16 -->2 bytes
+Imm32 --> 4 bytes
+
+Example- 
+
+MOV EAX,100
+
+in above example 100 is an immediate value.
+
+2. Displacement-
+
+	Displacement is an offset used with a memory operand.
+
+example-
+
+	MOV EAX,[EBX +10h]
+
+in this example 10h is a displacement.
+
+Displacement || Size
+DISP8 --> 1 byte
+Disp 32 --> 4 bytes
+
+Disp8- Is used when the displacement can be reprensted in 8 bits
+Disp32- is used for a 32-bits displacement.
+
+3. Relative displacement-
+
+Relative addressing is mainly used by jump and call instructions.
+the displacement is calculated from the addres of the next instruction.
+
+Relative displacement = Target address - Adress of the next instruction
+
+JMP address = 1000h
+instrusction size= 5 bytes
+Target address= 1100h
+
+next instruction= 1005h
+
+diusplacement= 1100h-1005h
+		=FBH
+
+For a 32 bit displacement-
+
+FB 00 00 00
+
+REL8 --> 8bit relative displacement
+REL32->  32 bit relative displacement
+
+	Short jumps such as JMP and JNE can use an 8-bit relative displacement,while near jumps can use a 32bit realative displacement.
+
+4.Little-endian Encoding--
+
+	In IA-32 multi byte values are strored in little endian format. The least significant byte is stored first.
+
+e.g-
+	1234678h 
+	78 56 34 12
+
+	This byte order is used while encoding multi byte immediate values and displacenments.
+
+5. Summary--
+
+Imm8 -->1 byte
+Imm16 -->2 bytes
+Imm32 --> 4 bytes
+
+DISP8 --> 1 byte
+Disp 32 --> 4 bytes
+
+
+REL8 --> 8bit relative displacement
+REL32->  32 bit relative displacement
+
+Littele-Endian --> Least significant byte stored first
+
+
+
