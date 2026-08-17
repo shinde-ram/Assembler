@@ -1,0 +1,231 @@
+
+
+
+Objective
+
+The objective is to design a fast instruction-encoding lookup data structure for a 32-bit x86 two-pass assembler.
+
+The data structure stores the information required for instruction encoding, including instruction name, opcode, operand types, ModR/M, SIB, displacement, immediate, and other encoding requirements.
+
+When an assembly instruction is provided as input, the assembler searches this data structure to find the matching instruction and operand format and retrieves the information required to generate its complete machine-code representation.
+
+------------------------------------------------
+>> Basic Process
+
+Assembly Instruction
+        ↓
+Identify Instruction and Operands
+        ↓
+Search Data Structure
+        ↓
+Find Matching Encoding
+        ↓
+Retrieve Encoding Information
+        ↓
+Generate Machine Code
+
+--------------------------------------------------
+
+The work is divided in 4 members :
+
+Part	        Responsibility
+----            ---------------
+Member 1	Design the data structure + searching algorithm that organizes all  instruction/  encoding information and quickly finds the correct encoding.
+Member 2	Create the instruction/opcode table: instruction name, opcode, operand count, operand types, ModR/M requirement, immediate/displacement requirements, etc.
+Member 3	Define register and ModR/M encoding: register codes and how MOD, REG, and R/M are converted into the ModR/M byte.
+Member 4	Define displacement, immediate, relative offsets.
+
+---------------------------------------------------
+
+# Proposed Fast Lookup Data Structure
+
+The instruction database will be organized into three levels of linked lists.
+The purpose is to progressively reduce the number of entries that must be searched.
+
+                     Instruction Database
+                            │
+                    First-Character Index
+                            │
+                  Instruction Linked List
+                            │
+                    Encoding Linked List
+
+----------------------
+
+1. First-Character Index
+An array of pointers is used to divide instructions according to their first character.
+
+index[26]
+A → ...
+B → ...
+C → ...
+...
+M → ...
+...
+S → ...
+...
+
+--------------------
+
+2. Instruction Linked List
+
+Each character entry points to a linked list containing the instructions beginning with that character.
+    M
+    │
+    ▼
+    MOV → MUL → ...
+
+Each instruction node contains:
+-> Instruction Node
+    Instruction Name
+    Pointer → Encoding Linked List
+    Pointer → Next Instruction
+ 
+After selecting the first-character list, only the instructions beginning with that character are searched.
+
+-----------------------
+
+3. Encoding Linked List
+A single instruction can have multiple encoding formats. Therefore, each instruction node points to another linked list containing its valid encoding formats.
+
+    MOV
+    │
+    ▼
+    Encoding 1 → Encoding 2 → Encoding 3 → NULL
+
+
+Encoding Node
+    Operand Types
+    Operand Count
+    Opcode
+    ModR/M information
+    SIB information
+    Displacement information
+    Immediate information
+    Other encoding rules
+    Pointer → Next Encoding
+ 
+After finding the instruction, the assembler does not search all opcode records. It searches only the encoding formats belonging to that instruction and matches the operand types.
+
+----------------------------
+
+4. Complete Structure
+                     index[26]
+                        │
+                 First Character
+                        │
+               Instruction List
+                        │
+             ┌──────────┴──────────┐
+          Instruction          Instruction
+             │                     │
+       Encoding List          Encoding List
+             │
+       ┌─────┼─────┐
+     Enc1   Enc2   Enc3
+
+
+----------------------------
+
+5. Why This Structure Is Fast
+
+    All instruction records
+            ↓
+    First-character index
+            ↓
+    Instructions with same first character
+            ↓
+    Required instruction
+            ↓
+    Encoding formats of that instruction
+            ↓
+    Matching operand format
+
+
+So instead of performing:
+    Search ALL instructions
+            ↓
+    Find instruction
+            ↓
+    Find correct encoding
+
+the structure performs:
+    Index lookup
+        ↓
+    Small instruction list
+        ↓
+    Small encoding list
+
+
+-----------------------------------------------------------------------------
+
+6. Data Structure Usage During Assembly
+
+When the assembler reads an instruction, the following process is performed:
+
+        Assembly Instruction
+                |
+        Extract Mnemonic
+                |
+        Get First Character
+                |
+        Access First-Character Index
+                |
+        Search Instruction Linked List
+                |
+        Find Matching Mnemonic
+                |
+        Identify Operand Types
+                |
+        Search Encoding Linked List
+                |
+        Find Matching Operand Format
+                |
+        Retrieve Encoding Information
+                |
+        Pass Information to Encoding Stage
+
+--------------------------------------------------------------------------------
+
+7. Integration With Other Components
+                 Assembly Source
+                       |
+                 Parse Instruction
+                       |
+              ┌─────────────────┐
+              │ Member 1        │
+              │ Fast Lookup DS  │
+              └────────┬────────┘
+              Correct Encoding
+                       ↓
+          ┌────────────┼────────────┐
+     Member 2       Member 3      Member 4
+     Opcode &       ModR/M        Immediate
+     Formats        Register      Displacement
+                       |
+                       |
+                Machine Code
+
+---------------------------------------------------------------------------------
+
+8. Node Relationships
+
+Character Index
+      │
+Instruction Node
+      │
+      Instruction Name
+      Next Instruction
+         Encoding List
+              │
+            Encoding Node
+               Operand Types
+               Opcode
+               ModR/M Information
+               SIB Information
+               Displacement Information
+               Immediate Information
+               Encoding Rules
+               Next Encoding
+
+----------------------------------------------------------------------------------
