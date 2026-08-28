@@ -84,7 +84,7 @@
 | XCHG        | `87`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
 | XOR         | `31`    |             2 | RM32      | REG32     | Yes    | Optional | Optional     | No        | `/r`               |
 | XOR         | `33`    |             2 | REG32     | RM32      | Yes    | Optional | Optional     | No        | `/r`               |
-
+    
 
 --> Operand Type Legend
 
