@@ -6,39 +6,9 @@
 #include <cstdio>
 #include<cctype>
 #include <cstdlib>
+#include "lib.h"
 
 using namespace std;
-
-// Structure store all info about a opcode
-struct Encoding
-{
-    string opcode;
-    int operandCount;
-
-    string operand1;
-    string operand2;
-
-    int modRM;
-    int sib;
-    int displacement;
-    int immediate;
-    int encodingRule;
-};
-
-// Convert string to uppercase
-string toUpper(string str)
-{
-    for (char &c : str)
-        c = toupper(c);
-
-    return str;
-}
-
-bool isReg(string &operand){
-    if (operand == "EAX" || operand == "EBX" || operand == "ECX" || operand == "EDX" || operand == "ESI" || operand == "EDI" || operand == "EBP" || operand == "ESP")
-        return true;
-    return false;
-}
 
 
 // Initialize opcode table
@@ -74,58 +44,6 @@ void initDS(unordered_map<char, unordered_map<string, vector<Encoding>>> &ds)
         ds[mnemonic[0]][mnemonic].push_back(enc);
     }
     fclose(opcodeFile);
-}
-
-// Get operand type
-string getOperandType(string operand)
-{
-    operand = toUpper(operand);
-
-    // 32-bit registers
-    if (isReg(operand)){
-        return "REG32";
-    }
-
-    // CL
-    if (operand == "CL")
-        return "CL";
-
-    // Memory operand
-    if (operand.length() >= 2 && operand[0] == '[' && operand[operand.length() - 1] == ']'){
-        return "RM32";
-    }
-
-    // Immediate
-    bool number = true;
-    int start = 0;
-
-    if (operand.length() == 0)
-        return "UNKNOWN";
-
-    if (operand[0] == '-' || operand[0] == '+')
-        start = 1;
-
-    if (start == operand.length())
-        return "UNKNOWN";
-
-    for (int i = start; i < operand.length(); i++){
-        if (!isdigit(operand[i])){
-            number = false;
-            break;
-        }
-    }
-
-    if (number)
-    {
-        long long value = stoll(operand);
-        if (value >= -128 && value <= 255)
-            return "IMM8";
-
-        if (value >= -32768 && value <= 65535)
-            return "IMM16";
-        return "IMM32";
-    }
-    return "UNKNOWN";
 }
 
 // Match the operand with expected one 
@@ -360,30 +278,3 @@ void validate(FILE *fp, unordered_map<char, unordered_map<string, vector<Encodin
     }
 }
 
-int main(int argc, char *argv[])
-{
-    if (argc < 2)
-    {
-        cout << "./executable [sample_assembly_file]";
-        exit(1);
-    }
-
-    // Data structure for opcode table
-    unordered_map<char, unordered_map<string, vector<Encoding>>> ds;
-
-    // Initialize opcode table
-    initDS(ds);
-
-    // Open source file
-    FILE *fp = fopen(argv[1], "r");
-    if (fp == NULL)
-    {
-        perror("File not open");
-        exit(1);
-    }
-
-    // Validate source
-    validate(fp, ds);
-    fclose(fp);
-    return 0;
-}
