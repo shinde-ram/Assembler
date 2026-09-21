@@ -21,6 +21,17 @@ struct Encoding
     int encodingRule;
 };
 
+struct Symbol
+{
+    string name;
+    int location;
+    int size;
+    char section;
+    string value;
+};
+
+extern unordered_map<string, Symbol> symbolTable;
+
 unsigned char calculateModRM(const Encoding &enc, string operand1, string operand2);
 
 string toUpper(string str);
@@ -38,5 +49,7 @@ bool operandMatches(string operand, string expected);
 bool matchEncoding(Encoding &enc, vector<string> &operands);
 
 void validate(FILE *fp, unordered_map<char, unordered_map<string, vector<Encoding>>> &ds);
+
+void printSymbolTable();
 
 #endif
