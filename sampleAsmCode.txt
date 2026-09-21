@@ -1,12 +1,23 @@
-MOV EAX, EBX
-ADD EAX, 122
-SUB EBX, EAX
-MOV EAX, [EBX+ESI*4]
-INC EAX
-INC [EAX]
-DEC EBX
-DEC [EBX]
-PUSH EAX
-PUSH [EAX]
-POP ECX
-POP [ECX]
+section .data
+    ram dd 10
+    sh db 'b'
+
+section .bss
+    bs resb 2
+
+section .text
+    global main
+
+main:
+    MOV EAX, EBX
+    ADD EAX, 122
+    SUB EBX, EAX
+    MOV EAX, [EBX+ESI*4]
+    INC EAX
+    INC [EAX]
+    DEC EBX
+    DEC [EBX]
+    PUSH EAX
+    PUSH [EAX]
+    POP ECX
+    POP [ECX]

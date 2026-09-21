@@ -33,6 +33,8 @@ int main(int argc, char *argv[])
     // Validate source
     validate(fp, ds);
 
+    printSymbolTable();
+
     //Calculate modRM
     modRM(ds, fp);
     
