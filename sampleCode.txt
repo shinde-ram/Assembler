@@ -1,0 +1,23 @@
+; Sample assembly file for testing Opcode, Symbol Table, ModR/M and SIB
+
+GLOBAL START
+
+SECTION .data
+VALUE DB 10
+NUM DD 100
+
+SECTION .bss
+BUFFER RESB 20
+
+SECTION .text
+
+START:
+    MOV EAX, EBX
+    MOV EAX, [EBX]
+    MOV EAX, [EBX+4]
+    MOV [EAX+8], EBX
+    MOV EAX, [EAX+ESI*4]
+    MOV EAX, [ESP]
+    ADD EAX, [EBX-8]
+    INC EAX
+    NEG [EAX]
