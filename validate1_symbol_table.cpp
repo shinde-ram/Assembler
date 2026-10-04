@@ -6,28 +6,12 @@
 #include <cctype>
 #include <cstdlib>
 #include <unordered_map>
+#include "assembler.h"
 
 using namespace std;
+vector<OpcodeEntry> table;
 
 #define MAX_OPERANDS 2
-
-// Structure store all info about a opcode
-struct OpcodeEntry
-{
-    string mnemonic;
-    string opcode;
-    int operandCount;
-    string operand1;
-    string operand2;
-    int modRM;
-    int sib;
-    int displacement;
-    int immediate;
-    int encodingRule;
-};
-
-// Opcode table
-vector<OpcodeEntry> table;
 
 // Convert string to uppercase
 void toUpperCase(string &str)
@@ -859,6 +843,8 @@ int main(int argc, char *argv[])
     buildSymbolTable(argv[2]);
     
     printSymbolTable();
+    
+    calculateModRMForFile(argv[2]);
 
     return 0;
 }
