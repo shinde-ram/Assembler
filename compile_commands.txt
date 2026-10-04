@@ -1,0 +1,7 @@
+Compile and run:
+
+g++ validate1_symbol_table.cpp calculateModRM.cpp -o assembler
+
+./assembler optable.txt sampleCode.txt
+
+
