@@ -33,5 +33,5 @@ bool readOperands(const string &text, vector<string> &operands, string &error);
 int findMatchingEncoding(const string &mnemonic, const vector<string> &operands);
 
 void calculateModRMForFile(const string &filename);
-
+void simulateEflagsForFile(const string &filename);
 #endif

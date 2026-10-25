@@ -910,16 +910,24 @@ int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        cout << "Usage: " << argv[0] << " <opcode_file> <assembly_file>" << endl;
+        cout << "Usage: " << argv[0]
+             << " <opcode_file> <assembly_file> [--eflags]" << endl;
         return 1;
     }
 
     readOpcodeTable(argv[1]);
+
     buildSymbolTable(argv[2]);
-    
+
     printSymbolTable();
-    
+
     calculateModRMForFile(argv[2]);
+
+    // EFLAGS simulation
+    if (argc >= 4 && string(argv[3]) == "--eflags")
+    {
+        simulateEflagsForFile(argv[2]);
+    }
 
     return 0;
 }
