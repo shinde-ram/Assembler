@@ -38,12 +38,58 @@ string getAddress(const string &operand)
     return result;
 }
 
+vector<string> getUnscaledRegisters(const string &operand)
+{
+    string address = getAddress(operand);
+    vector<string> registers;
+
+    if (address.find('*') != string::npos)
+        return registers;
+
+    string part;
+    char sign = '+';
+
+    for (size_t i = 0; i <= address.size(); i++)
+    {
+        if (i == address.size() ||
+            address[i] == '+' || address[i] == '-')
+        {
+            if (sign == '+' && isRegister(part))
+                registers.push_back(part);
+
+            part.clear();
+
+            if (i < address.size())
+                sign = address[i];
+        }
+        else
+        {
+            part += address[i];
+        }
+    }
+
+    return registers;
+}
+
 // Find the register used as the base register
 string getBaseRegister(const string &operand)
 {
     string address = getAddress(operand);
     size_t star = address.find('*');
 
+    if (star == string::npos)
+    {
+        vector<string> regs = getUnscaledRegisters(operand);
+
+        if (regs.empty())
+            return "";
+
+        // ESP cannot be used as an index register
+        if (regs.size() >= 2 && regs[1] == "ESP")
+            return "ESP";
+
+        return regs[0];
+    }
     // In a scaled address, first find the index register.
     string indexRegister = "";
 
@@ -88,8 +134,18 @@ string getIndexRegister(const string &operand)
     string address = getAddress(operand);
     size_t star = address.find('*');
 
-    if (star == string::npos)
+if (star == string::npos)
+{
+    vector<string> regs = getUnscaledRegisters(operand);
+
+    if (regs.size() < 2)
         return "";
+
+    if (regs[1] == "ESP" && regs[0] != "ESP")
+        return regs[0];
+
+    return regs[1];
+}
 
     string beforeStar = address.substr(0, star);
 
@@ -162,7 +218,14 @@ int getMod(const string &operand)
     if (!isMemory(operand))
         return -1;
 
-    string base = getBaseRegister(operand);
+   string base = getBaseRegister(operand);
+
+    // Absolute memory addressing has no base register
+    if (base.empty())
+    {
+        return 0;
+    }
+
     long long displacement;
 
     // No displacement means MOD 00 in normal cases.
@@ -195,8 +258,11 @@ int getRM(const string &operand)
     string address = getAddress(operand);
 
     // R/M 100 means that a SIB byte follows.
-    if (address.find('*') != string::npos)
+    if (address.find('*') != string::npos ||
+    !getIndexRegister(operand).empty())
+    {
         return 4;
+    }
 
     string base = getBaseRegister(operand);
 
@@ -281,6 +347,10 @@ bool needsSIB(const string &operand)
     if (address.find('*') != string::npos)
         return true;
 
+    // Two registers require a SIB byte
+    if (!getIndexRegister(operand).empty())
+        return true;
+
     // ESP as a base is also encoded using SIB.
     if (getBaseRegister(operand) == "ESP")
         return true;
@@ -297,7 +367,9 @@ int getScale(const string &operand)
     if (star == string::npos)
         return 0;       // scale 00 means x1
 
-    string scale = address.substr(star + 1);
+    size_t end = address.find_first_of("+-", star + 1);
+
+    string scale = address.substr(star + 1, end - (star + 1));
 
     if (scale == "2")
         return 1;       // 01 means x2
@@ -352,6 +424,7 @@ void calculateModRMForFile(const string &filename)
 
     while (getline(file, line))
     {
+        stripComment(line);
         stringstream ss(line);
         string firstWord;
         ss >> firstWord;

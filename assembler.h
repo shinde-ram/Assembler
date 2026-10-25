@@ -23,6 +23,7 @@ struct OpcodeEntry
 extern vector<OpcodeEntry> table;
 
 void toUpperCase(string &str);
+void stripComment(string &line);
 bool isRegister(const string &operand);
 bool isMemory(const string &operand);
 bool isNumber(const string &operand);

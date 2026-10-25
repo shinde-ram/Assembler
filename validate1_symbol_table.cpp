@@ -20,6 +20,14 @@ void toUpperCase(string &str)
         c = toupper((unsigned char)c);
 }
 
+void stripComment(string &line)
+{
+    size_t pos = line.find(';');
+
+    if (pos != string::npos)
+        line.erase(pos);
+}
+
 // Check whether operand is a 32-bit register
 bool isRegister(const string &operand)
 {
@@ -114,7 +122,17 @@ string getOperandType(const string &operand)
 // Get numeric value
 long long getNumber(const string &operand)
 {
-    return strtoll(operand.c_str(), NULL, 0);
+    size_t start = 0;
+
+    if (operand[0] == '-' || operand[0] == '+')
+        start = 1;
+
+    // Check whether the number is hexadecimal
+    bool isHex = operand.compare(start, 2, "0x") == 0 ||
+                 operand.compare(start, 2, "0X") == 0;
+
+    // Hexadecimal = base 16, Decimal = base 10
+    return strtoll(operand.c_str(), nullptr, isHex ? 16 : 10);
 }
 
 // Check IMM8 range
@@ -404,6 +422,7 @@ void validate(const string &filename)
 
     while (getline(file, line))
     {
+        stripComment(line);
         stringstream ss(line);
         string mnemonic;
 
@@ -518,6 +537,52 @@ void addSymbol(string name, int location, int size, char section, string value)
     symbolTable[name] = symbol;
 }
 
+int getDataSize(const string &value, int elementSize)
+{
+    int total = 0;
+    string item;
+    char quote = '\0';
+
+    for (size_t i = 0; i <= value.size(); i++)
+    {
+        char ch = (i == value.size()) ? ',' : value[i];
+
+        if ((ch == '\'' || ch == '"') &&
+            (quote == '\0' || quote == ch))
+            quote = (quote == '\0') ? ch : '\0';
+
+        if (ch == ',' && quote == '\0')
+        {
+            size_t first = item.find_first_not_of(" \t");
+
+            if (first == string::npos)
+                return -1;
+
+            size_t last = item.find_last_not_of(" \t");
+            string token = item.substr(first, last - first + 1);
+
+            bool quoted = token.size() >= 2 &&
+                ((token.front() == '\'' && token.back() == '\'') ||
+                 (token.front() == '"' && token.back() == '"'));
+
+            if (quoted)
+            {
+                if (elementSize != 1)
+                    return -1;
+
+                total += static_cast<int>(token.size() - 2);
+            }
+            else
+                total += elementSize;
+
+            item.clear();
+        }
+        else
+            item += ch;
+    }
+
+    return quote == '\0' ? total : -1;
+}
 // Read a DB, DW or DD line from the data section
 bool processData(string line, int &dataLocation)
 {
@@ -556,8 +621,18 @@ bool processData(string line, int &dataLocation)
         return true;
     }
 
-    addSymbol(name, dataLocation, size, 'd', value);
-    dataLocation += size;
+    int totalSize = getDataSize(value, size);
+
+    if (totalSize < 0)
+    {
+        cout << "Error: Invalid data values for "
+            << name << endl;
+        return true;
+    }
+
+    addSymbol(name, dataLocation, totalSize, 'd', value);
+
+    dataLocation += totalSize;
 
     return true;
 }
@@ -645,8 +720,8 @@ void buildSymbolTable(const string &filename)
 
     while (getline(file, line))
     {
+        stripComment(line);
         string temp = line;
-
         while (!temp.empty() && isspace((unsigned char)temp.front()))
             temp.erase(temp.begin());
 
